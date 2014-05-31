@@ -1,56 +1,91 @@
 package com.main;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import com.model.Dog;
 import com.model.Person;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 public class Page04 {
-	public static void main(String[] args) {
-		CodeGenerator.startConnection();
 
+	private EntityManager em;
+
+	@Before
+	public void setUp() throws Exception {
+		CodeGenerator.startConnection();
 		CodeGenerator.generateData();
 
-		EntityManager em = CodeGenerator.getEntityManager();
 
+		em = CodeGenerator.getEntityManager();
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		CodeGenerator.rollback();
+	}
+
+	@Test
+	public void all_dogs() throws Exception {
 		List<Dog> dogs = listAllDogs(em);
+		List<String> dogNames = dogs.stream().map(Dog::getName).collect(Collectors.toList());
+		List<String> expectedDogNames = CodeGenerator.ALL_DOGS.stream().map(Dog::getName).collect(Collectors.toList());
+		assertThat(dogNames).containsAll(expectedDogNames);
+	}
 
-		for (Dog dog : dogs) {
-			System.out.println(dog.getName());
-		}
-
+	@Test
+	public void person_by_name() throws Exception {
 		Person person03 = findPersonByName(em, CodeGenerator.PERSON03_NAME);
-		System.out.println(person03.getName());
+		assertThat(person03.getName()).isEqualTo(CodeGenerator.PERSON03_NAME);
+	}
 
+	@Test
+	public void person_by_person_object() throws Exception {
 		Person person01 = new Person();
 		person01.setId(1);
 
 		Person savedPerson = findPersonByPersonObject(em, person01);
-		System.out.println(savedPerson.getName());
+		assertThat(savedPerson.getName()).isEqualTo(CodeGenerator.PERSON01_NAME);
+	}
 
-		List<Dog> dogsByWeight = listAllDogsOrderingByWeight(em);
+	@Test
+	public void all_dogs_ordered_by_weight() throws Exception {
+		List<Dog> dogs = listAllDogsOrderingByWeight(em);
+		List<String> dogNames = dogs.stream().map(Dog::getName).collect(Collectors.toList());
+		List<String> expectedDogNames = dogs.stream().sorted(Comparator.comparingDouble(Dog::getWeight).reversed()).map(Dog::getName).collect(Collectors.toList());
+		assertThat(dogNames).isEqualTo(expectedDogNames);
+	}
 
-		System.out.print("Weights found: ");
-		for (Dog dog : dogsByWeight) {
-			System.out.print(dog.getWeight() + " / ");
-		}System.out.println();
-
+	@Test
+	public void findAddressNameOfPerson() throws Exception {
 		String addressName = findAddressNameOfPerson(em, CodeGenerator.PERSON04_NAME);
-		System.out.println("Person 04 address is: " + addressName);
+		assertThat(addressName).isEqualTo("Street C");
+	}
 
+	@Test
+	public void findPersonByNameWithAllDogs() throws Exception {
 		Person person02 = findPersonByNameWithAllDogs(em, CodeGenerator.PERSON02_NAME);
-
-		for (Dog dog : person02.getDogs()) {
-			System.out.println("Person 02 Dog: " + dog.getName());
-		}
-
-		Person person05 = findPersonByNameThatMayNotHaveDogs(em, CodeGenerator.PERSON06_NAME);
-		System.out.println("Is the list of the Dogs from the Person 05 empty? " + person05.getDogs().size());
-
-		CodeGenerator.closeConnection();
+		List<String> dogNames = person02.getDogs().stream().map(Dog::getName).collect(Collectors.toList());
+		List<String> expectedDogNames = CodeGenerator.ALL_DOGS.subList(3, 6).stream().map(Dog::getName).collect(Collectors.toList());
+		assertThat(person02.getName()).isEqualTo(CodeGenerator.PERSON02_NAME);
+		assertThat(dogNames).isEqualTo(expectedDogNames);
+	}
+	@Test
+	public void findPersonByNameThatMayNotHaveDogs() throws Exception {
+		Person person06 = findPersonByNameThatMayNotHaveDogs(em, CodeGenerator.PERSON06_NAME);
+		List<String> dogNames = person06.getDogs().stream().map(Dog::getName).collect(Collectors.toList());
+		assertThat(person06.getName()).isEqualTo(CodeGenerator.PERSON06_NAME);
+		assertThat(dogNames).isEqualTo(Collections.emptyList());
 	}
 
 	/**

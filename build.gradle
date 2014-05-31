@@ -8,7 +8,6 @@ dependencies {
 	compile 'org.hsqldb:hsqldb:2.2.6'
 
 	compile 'org.hibernate:hibernate-entitymanager:4.3.5.Final'
-//	compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
-//	compile 'org.hibernate:hibernate-core:4.2.7.Final'
 	testCompile 'junit:junit:4.11'
+	testCompile 'org.assertj:assertj-core:1.6.0'
 }

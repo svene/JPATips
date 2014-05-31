@@ -2,7 +2,10 @@ package com.main;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -22,6 +25,8 @@ public class CodeGenerator {
 	public static final String PERSON04_NAME = "Joseph";
 	public static final String PERSON05_NAME = "Mark";
 	public static final String PERSON06_NAME = "I will not have any relationship";
+	public static List<Dog> ALL_DOGS = new ArrayList<>();
+
 
 	public static void startConnection() {
 		emf = Persistence.createEntityManagerFactory("JpaQuery");
@@ -31,6 +36,10 @@ public class CodeGenerator {
 
 	public static void closeConnection() {
 		em.getTransaction().commit();
+		emf.close();
+	}
+	public static void rollback() {
+		em.getTransaction().rollback();
 		emf.close();
 	}
 
@@ -57,6 +66,7 @@ public class CodeGenerator {
 		Dog dog16 = new Dog("Rambo", 5.44d, createNewDate(++day, ++month, 2015));
 		Dog dog17 = new Dog("Terminator", 3.88d, createNewDate(++day, ++month, 2016));
 		Dog dog18 = new Dog("John McClan", 3.88d, createNewDate(++day, ++month, 2016));
+		ALL_DOGS = Arrays.asList(dog01, dog02, dog03, dog04, dog05, dog06, dog07, dog08, dog09, dog10, dog11, dog12, dog13, dog14, dog15, dog16, dog17, dog18);
 
 		Person person01 = new Person(PERSON01_NAME, 33);
 		person01.getDogs().add(dog01);
